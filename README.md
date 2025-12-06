@@ -1,0 +1,1 @@
+# Principiul-Rezolutiei
