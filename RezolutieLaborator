@@ -1,0 +1,189 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct Clauza {
+    int v[5];
+};
+
+int main() {
+    cout << "--- TEMA LABORATOR (Sistem F, G, H) ---" << endl;
+
+    vector<Clauza> S;
+    Clauza f;
+    for(int k=0; k<5; k++) f.v[k] = -1;
+    f.v[0] = 1; // !p
+    f.v[1] = 0; // q
+    S.push_back(f);
+    cout << "Automat: Am adaugat F = (p->q) in lista.\n";
+
+    int valoare_citita;
+
+    cout << "\nIntrodu cele 16 valori pentru G (0 sau 1): ";
+    for(int i = 0; i < 16; i++) {
+        cin >> valoare_citita;
+        if(valoare_citita == 0) {
+            Clauza noua;
+            for(int k=0; k<5; k++) noua.v[k] = -1;
+            noua.v[0] = (i >> 3) & 1; // p
+            noua.v[1] = (i >> 2) & 1; // q
+            noua.v[2] = (i >> 1) & 1; // r
+            noua.v[3] = (i >> 0) & 1; // s
+            S.push_back(noua);
+        }
+    }
+
+    cout << "\nIntrodu cele 32 valori pentru H (0 sau 1): ";
+    for(int i = 0; i < 32; i++) {
+        cin >> valoare_citita;
+        if(valoare_citita == 0) {
+            Clauza noua;
+            for(int k=0; k<5; k++) noua.v[k] = -1;
+            noua.v[0] = (i >> 4) & 1; // p
+            noua.v[1] = (i >> 3) & 1; // q
+            noua.v[2] = (i >> 2) & 1; // r
+            noua.v[3] = (i >> 1) & 1; // s
+            noua.v[4] = (i >> 0) & 1; // t
+            S.push_back(noua);
+        }
+    }
+
+    cout << "\nClauze initiale (FNC):\n";
+    for(int i=0; i<S.size(); i++) {
+        cout << i+1 << ". (";
+        bool e_primul = true;
+        for(int k=0; k<5; k++) {
+            if(S[i].v[k] != -1) {
+                if(!e_primul) cout << " v ";
+                if(S[i].v[k] == 1) cout << "!";
+                cout << (char)('p' + k);
+                e_primul = false;
+            }
+        }
+        cout << ")" << endl;
+    }
+    cout << "------------------------\n";
+    bool ceva_nou = true;
+    int pas = 0;
+
+    while(ceva_nou) {
+        ceva_nou = false;
+        pas++;
+        cout << "------------------------\n";
+        int dimensiune = S.size();
+
+        for(int i = 0; i < dimensiune; i++) {
+            for(int j = i + 1; j < dimensiune; j++) {
+                int conflicte = 0;
+                int poz_conflict = -1;
+
+                for(int k=0; k<5; k++) {
+                    if(S[i].v[k] != -1 && S[j].v[k] != -1) {
+                         if(S[i].v[k] != S[j].v[k]) {
+                            conflicte++;
+                            poz_conflict = k;
+                        }
+                    }
+                }
+
+                if(conflicte == 1) {
+                    Clauza noua;
+                    bool e_contradictie = true;
+
+                    for(int k=0; k<5; k++) {
+                        noua.v[k] = -1;
+                        if(k != poz_conflict) {
+                            if(S[i].v[k] != -1) noua.v[k] = S[i].v[k];
+                            else if(S[j].v[k] != -1) noua.v[k] = S[j].v[k];
+                        }
+                        if(noua.v[k] != -1) e_contradictie = false;
+                    }
+
+                    if(e_contradictie) {
+                        cout << "\n!!! CONTRADICTIE GASITA la pasul " << pas << " !!!\n";
+                        cout << "Din: (";
+                        bool first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[i].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[i].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") SI (";
+
+                        first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[j].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[j].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") REZULTA []" << endl;
+                        cout << "------------------------\n";
+                        cout << "SISTEM INCONSISTENT" << endl;
+                        return 0;
+                    }
+
+                    bool exista = false;
+                    for(int k=0; k<S.size(); k++) {
+                        bool identic = true;
+                        for(int bit=0; bit<5; bit++)
+                            if(S[k].v[bit] != noua.v[bit]) identic = false;
+                        if(identic) exista = true;
+                    }
+
+                    if(!exista) {
+                        S.push_back(noua);
+                        ceva_nou = true;
+
+                        cout << "Pas " << pas << ": Din (";
+                        bool first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[i].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[i].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") si (";
+
+                        first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[j].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[j].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") REZULTA (";
+
+                        first = true;
+                        for(int k=0; k<5; k++) {
+                            if(noua.v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(noua.v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ")" << endl;
+                    }
+                }
+            }
+        }
+
+        if(pas > 2000) {
+            cout << "Limita de pasi atinsa." << endl;
+            break;
+        }
+    }
+    cout << "\nNu s-a gasit contradictie. Sistem Consistent.\n";
+    return 0;
+}
