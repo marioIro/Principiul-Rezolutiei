@@ -1,0 +1,180 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct Clauza {
+    int v[5];
+};
+
+int main() {
+    cout << "VERIFICARE TEST: p->q, q->r ... !(p->t)" << endl;
+
+    vector<Clauza> S;
+
+    Clauza c1;
+    for(int i=0; i<5; i++) c1.v[i]=-1;
+    c1.v[0]=1; c1.v[1]=0;
+    S.push_back(c1);
+
+    Clauza c2;
+    for(int i=0; i<5; i++) c2.v[i]=-1;
+    c2.v[1]=1; c2.v[2]=0;
+    S.push_back(c2);
+
+    Clauza c3;
+    for(int i=0; i<5; i++) c3.v[i]=-1;
+    c3.v[2]=1; c3.v[3]=0;
+    S.push_back(c3);
+
+    Clauza c4;
+    for(int i=0; i<5; i++) c4.v[i]=-1;
+    c4.v[3]=1; c4.v[4]=0;
+    S.push_back(c4);
+
+    Clauza c5;
+    for(int i=0; i<5; i++) c5.v[i]=-1;
+    c5.v[0]=0;
+    S.push_back(c5);
+
+    Clauza c6;
+    for(int i=0; i<5; i++) c6.v[i]=-1;
+    c6.v[4]=1;
+    S.push_back(c6);
+
+    cout << "\nClauze initiale:\n";
+    for(int i=0; i<S.size(); i++) {
+        cout << i+1 << ". (";
+        bool e_primul = true;
+        for(int k=0; k<5; k++) {
+            if(S[i].v[k] != -1) {
+                if(!e_primul) cout << " v ";
+                if(S[i].v[k] == 1) cout << "!";
+                cout << (char)('p' + k);
+                e_primul = false;
+            }
+        }
+        cout << ")" << endl;
+    }
+    cout << "------------------------\n";
+
+    bool ceva_nou = true;
+    int pas = 0;
+
+    while(ceva_nou) {
+        ceva_nou = false;
+        pas++;
+        int dimensiune = S.size();
+
+        for(int i = 0; i < dimensiune; i++) {
+            for(int j = i + 1; j < dimensiune; j++) {
+
+                int conflicte = 0;
+                int poz_conflict = -1;
+
+                for(int k=0; k<5; k++) {
+                    if(S[i].v[k] != -1 && S[j].v[k] != -1) {
+                         if(S[i].v[k] != S[j].v[k]) {
+                            conflicte++;
+                            poz_conflict = k;
+                        }
+                    }
+                }
+
+                if(conflicte == 1) {
+                    Clauza noua;
+                    bool e_contradictie = true;
+
+                    for(int k=0; k<5; k++) {
+                        noua.v[k] = -1;
+
+                        if(k != poz_conflict) {
+                            if(S[i].v[k] != -1) noua.v[k] = S[i].v[k];
+                            else if(S[j].v[k] != -1) noua.v[k] = S[j].v[k];
+                        }
+
+                        if(noua.v[k] != -1) e_contradictie = false;
+                    }
+
+                    if(e_contradictie) {
+                        cout << "Din: (";
+                        bool first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[i].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[i].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") SI (";
+
+                        first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[j].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[j].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") REZULTA []" << endl;
+                        cout << "------------------------\n";
+                        cout << "SISTEM INCONSISTENT" << endl;
+                        return 0;
+                    }
+
+                    bool exista = false;
+                    for(int k=0; k<S.size(); k++) {
+                        bool identic = true;
+                        for(int bit=0; bit<5; bit++)
+                            if(S[k].v[bit] != noua.v[bit]) identic = false;
+                        if(identic) exista = true;
+                    }
+
+                    if(!exista) {
+                        S.push_back(noua);
+                        ceva_nou = true;
+
+                        cout << "Pas " << pas << ": Din (";
+                        bool first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[i].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[i].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") si (";
+
+                        first = true;
+                        for(int k=0; k<5; k++) {
+                            if(S[j].v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(S[j].v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ") REZULTA (";
+
+                        first = true;
+                        for(int k=0; k<5; k++) {
+                            if(noua.v[k] != -1) {
+                                if(!first) cout << " v ";
+                                if(noua.v[k] == 1) cout << "!";
+                                cout << (char)('p' + k);
+                                first = false;
+                            }
+                        }
+                        cout << ")" << endl;
+                    }
+                }
+            }
+        }
+    }
+    cout << "------------------------\n";
+    cout << "\nNu s-a gasit contradictie. Sistem Consistent.\n";
+    return 0;
+}
